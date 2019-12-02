@@ -37,16 +37,14 @@ case "$1" in
         gcp)
             ;;
         *)
-            echo $"Usage: $0 {aws|azure|gcp} template-file username password [docker-device]"
-            echo $"example: ./setup.sh azure templates/essential.json fabio my_pass"
-            echo $"example: ./setup.sh aws template/cml.json fabio my_pass /dev/xvdb"
+            echo $"Usage: $0 {aws|azure|gcp} template-file [docker-device]"
+            echo $"example: ./setup.sh azure templates/essential.json"
+            echo $"example: ./setup.sh aws template/cml.json /dev/xvdb"
             exit 1
 esac
 
 TEMPLATE=$2
-USERNAME=$3
-PASSWORD=$4
-DOCKERDEVICE=$5
+DOCKERDEVICE=$3
 
 echo "-- Configure networking"
 PUBLIC_IP=`curl https://api.ipify.org/`
@@ -62,14 +60,7 @@ sed -i 's/SELINUX=.*/SELINUX=disabled/' /etc/selinux/config
 echo "-- Install CM and MariaDB"
 
 ## CM 7
-cat - >/etc/yum.repos.d/cloudera-manager.repo <<EOF
-[cm]
-name=cm
-enabled=1
-type=rpm-md
-baseurl=https://$USERNAME:$PASSWORD@archive.cloudera.com/p/cm7/7.0.3/redhat7/yum/
-gpgcheck=0
-EOF
+wget https://archive.cloudera.com/cm7/7.0/redhat7/yum/cloudera-manager-trial.repo -P /etc/yum.repos.d/
 
 ## MariaDB 10.1
 cat - >/etc/yum.repos.d/MariaDB.repo <<EOF
@@ -174,13 +165,10 @@ echo "-- Now CM is started and the next step is to automate using the CM API"
 pip install --upgrade pip cm_client
 
 sed -i "s/YourHostname/`hostname -f`/g" $TEMPLATE
-sed -i "s/USERNAME/$USERNAME/g" $TEMPLATE
-sed -i "s/PASSWORD/$PASSWORD/g" $TEMPLATE
 sed -i "s/YourCDSWDomain/cdsw.$PUBLIC_IP.nip.io/g" $TEMPLATE
 sed -i "s/YourPrivateIP/`hostname -I | tr -d '[:space:]'`/g" $TEMPLATE
 sed -i "s#YourDockerDevice#$DOCKERDEVICE#g" $TEMPLATE
 
 sed -i "s/YourHostname/`hostname -f`/g" scripts/create_cluster.py
 
-python scripts/create_cluster.py $TEMPLATE $USERNAME $PASSWORD
-
+python scripts/create_cluster.py $TEMPLATE

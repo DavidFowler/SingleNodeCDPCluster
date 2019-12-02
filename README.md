@@ -1,6 +1,6 @@
-# Single Node CDP Cluster 
+# Single Node CDP Data Center Cluster 
 
-This script automatically sets up a CDP cluster on the public cloud on a single VM with the services preconfigured in a template file.
+This script automatically sets up a CDP Data Center Trial cluster on the public cloud on a single VM with the services preconfigured in a template file.
 
 As this cluster is meant to be used for demos, experimenting, training, and workshops, it doesn't setup Kerberos and TLS.
 
@@ -14,21 +14,19 @@ As this cluster is meant to be used for demos, experimenting, training, and work
 ```bash
 sudo su -
 yum install -y git
-git clone https://github.com/DavidFowler/SingleNodeCDPCluster.git
+git clone https://github.com/fabiog1901/SingleNodeCDPCluster.git
 cd SingleNodeCDPCluster
 ```
 
-The script `setup.sh` takes 5 arguments:
+The script `setup.sh` takes 3 arguments:
 - the cloud provider name: `aws`,`azure`,`gcp`;
 - the template file;
-- the username;
-- the password;
 - OPTIONAL the Docker Device disk mount point.
 
 Example: create cluster on AWS using `base.json`
 
 ```bash
-./setup.sh aws templates/base.json my_user my_pass
+./setup.sh aws templates/base.json
 ```
 
 Wait until the script finishes, check for any error.
